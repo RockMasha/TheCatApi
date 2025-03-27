@@ -1,9 +1,7 @@
-import { Component } from "react";
 import { Img, Li, Name, Origin, Prop, PropList } from "./CatCard.styled";
 
-class CatCard extends Component {
-  render() {
-    const { data } = this.props;
+function CatCard(props) {
+    const { data } = props;
     const { url, breeds } = data;
     const { name, origin, weight, life_span, affection_level } = breeds[0];
 
@@ -27,7 +25,6 @@ class CatCard extends Component {
         </div>
       </Li>
     );
-  }
 }
 
 export default CatCard;

@@ -1,55 +1,48 @@
-import { Component } from "react";
 import { BtnMore, List } from "./CatsList.styled";
 import CatCard from "../CatCard/CatCard";
 import { BarLoader } from "react-spinners";
 import colors from "../../constans/colors";
+import { useEffect, useState } from "react";
 
 let isFirstRender = true;
 
-class CatsList extends Component {
-  constructor() {
-    super();
-    this.state = {
-      loader: false,
-    };
-  }
+function CatsList(props) {
+  const [loader, setLoader] = useState(false);
 
-  setCatsList = async () => {
-    if (this.state.loader) {
+  const setCatsList = async () => {
+    if (loader) {
       return;
     }
-    this.setState({ loader: true });
-    await this.props.setCatsElements();
-    this.setState({ loader: false });
+    setLoader(true);
+    await props.setCatsElements();
+    setLoader(false);
   };
 
-  render() {
-    const { loader } = this.state;
-    const { list } = this.props;
-
-    return (
-      <section>
-        <List>
-          {list.map((data, index) => (
-            <CatCard data={data} key={"catCard" + index} />
-          ))}
-        </List>
-        {list.length === 0 || (
-          <BtnMore onClick={this.setCatsList}>
-            MORE CATS!
-            {loader && <BarLoader color={colors.pink} height="5px" />}
-          </BtnMore>
-        )}
-      </section>
-    );
-  }
-
-  componentDidMount = async () => {
+  useEffect(() => {
+    startCats();
+  }, []);
+  const startCats = async () => {
     if (isFirstRender) {
       isFirstRender = false;
-      await this.setCatsList();
+      await setCatsList();
     }
   };
+
+  return (
+    <section>
+      <List>
+        {props.list.map((data, index) => (
+          <CatCard data={data} key={"catCard" + index} />
+        ))}
+      </List>
+      {props.list.length === 0 || (
+        <BtnMore onClick={setCatsList}>
+          MORE CATS!
+          {loader && <BarLoader color={colors.pink} height="5px" />}
+        </BtnMore>
+      )}
+    </section>
+  );
 }
 
 export default CatsList;

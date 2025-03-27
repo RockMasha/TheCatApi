@@ -1,4 +1,3 @@
-import { Component } from "react";
 import { AppSt, Title } from "./App.styled";
 import CatsList from "../CatsList/CatsList";
 import api from "../../api";
@@ -9,101 +8,81 @@ import { Toaster } from "react-hot-toast";
 import { openPage } from "../../constans/tosts/openPage";
 import { showError } from "../../constans/tosts/showError";
 import { showEmpty } from "../../constans/tosts/showEmpty";
+import { useEffect, useState } from "react";
 
 openPage();
 const { getCats } = api;
 
-class App extends Component {
-  constructor() {
-    super();
-    this.state = {
-      breed: "",
-      list: [],
-      loading: true,
-      error: false,
-    };
-    this.page = 1;
-  }
+function App() {
+  const [breed, setBreed] = useState("");
+  const [list, setList] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [page, setPage] = useState(1);
 
-  setCatsList = async (breed = null, isChangeBreed) => {
+  const setCatsList = async (newBreed = null, isChangeBreed) => {
     try {
       if (isChangeBreed) {
-        await this.resetList(breed);
+        resetList(newBreed);
       }
-      const newList = await this.getCatsData();
-      if (breed === "") {
+      const newList = await getCatsData(newBreed);
+      if (newBreed === "") {
         showEmpty();
         return;
       }
-      if (isChangeBreed && this.isNotSimilarBreed(breed)) {
-        this.updateList(newList);
+      if (isChangeBreed && isNotSimilarBreed(newBreed)) {
+        setList(newList);
       } else {
-        this.plusList(newList);
+        plusList(newList);
       }
-      this.nextPage();
-      this.setState({ error: false });
+      nextPage();
+      setError(false);
     } catch (error) {
-      this.catchError(error);
+      catchError(error);
     } finally {
-      this.setState({ loading: false });
+      setLoading(false);
     }
   };
 
-  async resetList(breed) {
-    await this.setState({ list: [], breed: breed });
-    this.resetPage();
-  }
-  plusList(newList = []) {
-    const stateList = [...this.state.list];
-    const list = stateList.concat(newList);
-    this.updateList(list);
-  }
-  async getCatsData() {
-    const data = await getCats(this.state.breed, this.getPage());
+  const resetList = async (newBreed) => {
+    setList([]);
+    setBreed(newBreed);
+    setPage(0);
+  };
+
+  const plusList = (newList = []) => {
+    const stateList = [...list];
+    const updateList = stateList.concat(newList);
+    setList(updateList);
+  };
+  const getCatsData = async (newBreed) => {
+    const data = await getCats(newBreed, page);
     return data;
-  }
-  isNotSimilarBreed(breed) {
-    return this.state.breed !== breed;
-  }
-  updateList(newList = []) {
-    this.setState({ list: newList });
-  }
-  catchError(error) {
+  };
+  const isNotSimilarBreed = (breedNew) => {
+    return breed !== breedNew;
+  };
+  const catchError = (error) => {
     if (error.message !== "canceled") {
       showError();
     }
-    this.setState({ error: true });
-  }
+    setError(true);
+  };
 
-  nextPage() {
-    this.page += 1;
-  }
-  resetPage() {
-    this.page = 0;
-  }
-  getPage() {
-    return this.page;
-  }
+  const nextPage = () => {
+    setPage((prevPage) => (prevPage += 1));
+  };
 
-  render() {
-    const { loading, error, list, breed } = this.state;
-    return (
-      <AppSt>
-        <Toaster />
-        <Title>Cats</Title>
-        <SortCats setCatsElements={this.setCatsList} />
-        {loading && <Loader />}
-        {!error && (
-          <CatsList
-            list={list}
-            setCatsElements={this.setCatsList}
-            breed={breed}
-          />
-        )}
-        <GlobalStyles />
-      </AppSt>
-    );
-  }
+  return (
+    <AppSt>
+      <Toaster />
+      <Title>Cats</Title>
+      <SortCats setCatsElements={setCatsList} />
+      {loading && <Loader />}
+      {!error && <CatsList list={list} setCatsElements={setCatsList} />}
+      <GlobalStyles />
+    </AppSt>
+  );
 }
 
 export default App;
